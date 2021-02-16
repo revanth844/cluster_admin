@@ -2,6 +2,8 @@ package com.myorg.cluster.admin.controller;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,7 +24,7 @@ public class AdminController {
 	private FileAdminService adminService;
 	
 	@PostMapping(value = "getTargetCluster", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<ClusterDetails>> getTargetCluster(@RequestBody FileInformation fileInfo) {
+	public ResponseEntity<List<ClusterDetails>> getTargetCluster(@Valid @RequestBody FileInformation fileInfo) {
 		List<ClusterDetails> list = adminService.getTargetClusterToSaveFile(fileInfo);
 		return new ResponseEntity<>(list, HttpStatus.OK);
 	}

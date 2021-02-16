@@ -1,19 +1,23 @@
 package com.myorg.cluster.admin.model;
 
-//import lombok.Builder;
+import javax.validation.constraints.NotBlank;
+
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-
 @Setter
 @Getter
-@NoArgsConstructor
+@Builder
 @ToString
 public class FileInformation {
 
+	@NotBlank(message = "fileName is mandatory")
 	String fileName;
+	
+	@NotBlank(message = "fileSize is mandatory")
 	String fileSize;
+	
 	String clusterName;
 }
