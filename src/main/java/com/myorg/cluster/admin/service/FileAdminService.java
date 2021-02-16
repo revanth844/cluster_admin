@@ -55,9 +55,9 @@ public class FileAdminService {
 				e.printStackTrace();
 			}
 		});
-		
-		//For testing performance of application, uncomment the following block
-		//	Inject random test data
+
+		// For testing performance of application, uncomment the following block
+		// Inject random test data
 //		for (int cluster=0; cluster<300; cluster++) {
 //			System.out.println(cluster);
 //			ArrayList<ClusterHostStats> clusterStats = new ArrayList<ClusterHostStats>();
@@ -67,46 +67,49 @@ public class FileAdminService {
 //			clusterStatsMap.put("c"+cluster, clusterStats);
 //		}
 	}
-	
+
 	private ClusterHostStats getClusterStat(int cluster, int host) {
 		long maxDiskSpace = getRandomNumberUsingInts(512, 2048);
-		
-		return new ClusterHostStats("c"+cluster, "h"+host, 
-				maxDiskSpace,
-				getRandomNumberUsingInts(10, maxDiskSpace/50),
-				getRandomNumberUsingInts(512, 5000)
-				);
+
+		return new ClusterHostStats("c" + cluster, "h" + host, maxDiskSpace,
+				getRandomNumberUsingInts(10, maxDiskSpace / 50), getRandomNumberUsingInts(512, 5000));
 	}
+
 	private long getRandomNumberUsingInts(long min, long max) {
-	    Random random = new Random();
-	    return random.longs(min, max+1)
-	      .findFirst()
-	      .getAsLong();
+		Random random = new Random();
+		return random.longs(min, max + 1).findFirst().getAsLong();
 	}
 
 	public List<ClusterDetails> getTargetClusterToSaveFile(FileInformation fileInfo) {
 		List<ClusterDetails> eligibleHosts = new ArrayList<>();
 
-		System.out.println(fileInfo);
+		//System.out.println(fileInfo);
 
 		int fileSizeInGB = Integer.parseInt(fileInfo.getFileSize().toLowerCase().replaceAll("gb", ""));
 
 		// In cluster is not specified in input, get suitable hosts across all clusters
 		if (fileInfo.getClusterName() == null) {
+			// If cluster isn't specified, then (clusters*hosts) iterations will be
+			// performed.
+			// with parallelStream(), iterations will be performed in-parallel, as number of
+			// CPUs available for JVM
+
 			clusterStatsMap.forEach((cluster, hosts) -> {
 				eligibleHosts.addAll(hosts.parallelStream().filter(host -> {
 					return host.getAvailable_disk_space() > fileSizeInGB;
 				}).map(host -> new ClusterDetails(host.getCluster(), host.getHostname())).collect(Collectors.toList()));
 			});
 
-		} else { // get suitable hosts in specified cluster
-			eligibleHosts.addAll(clusterStatsMap
-					.get(fileInfo.getClusterName())
-					.parallelStream()
-					.filter(host -> {
+		} else {
+			// As cluster is specified, then (hosts) iterations will be performed.
+			// with parallelStream(), iterations will be performed in-parallel, as number of
+			// CPUs available for JVM
+
+			eligibleHosts.addAll(clusterStatsMap.get(fileInfo.getClusterName()).parallelStream().filter(host -> {
 				return host.getAvailable_disk_space() > fileSizeInGB;
 			}).map(host -> new ClusterDetails(host.getCluster(), host.getHostname())).collect(Collectors.toList()));
 		}
+		
 		return eligibleHosts;
 	}
 
