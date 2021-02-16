@@ -12,6 +12,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myorg.cluster.admin.model.ClusterDetails;
@@ -30,34 +31,28 @@ public class FileAdminService {
 	ObjectMapper objectMapper;
 
 	@PostConstruct
-	private void readClusterStatsToMemory() {
-		JsonNode jsonTree;
-		try {
-			jsonTree = objectMapper.readTree(new File(DATA_FILE_NAME));
+	private void readClusterStatsToMemory() throws JsonProcessingException, IOException {
+		JsonNode jsonTree = objectMapper.readTree(new File(DATA_FILE_NAME));
 
-			// Load JSON Tree into an arrayList
-			// Ideally, this data-structure should be continuously updated by a service
-			// after data file is written to the cluster, with updated availableDiskSpace
-			jsonTree.elements().forEachRemaining(entry -> {
-				System.out.println(entry);
+		// Load JSON Tree into Primary memory, as Map of arrayList for each cluster
+		// This data-structure should be continuously updated with availableDiskSpace
+		// after data file is written to the cluster, with updated
+		jsonTree.elements().forEachRemaining(entry -> {
+			System.out.println(entry);
 
-				try {
-					ClusterHostStats stat = objectMapper.readValue(entry.traverse(), ClusterHostStats.class);
-					String clusterName = stat.getCluster();
+			try {
+				ClusterHostStats stat = objectMapper.readValue(entry.traverse(), ClusterHostStats.class);
+				String clusterName = stat.getCluster();
 
-					ArrayList<ClusterHostStats> clusterStats = (clusterStatsMap.containsKey(clusterName))
-							? (clusterStatsMap.get(clusterName))
-							: (new ArrayList<ClusterHostStats>());
-					clusterStats.add(stat);
-					clusterStatsMap.put(clusterName, clusterStats);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			});
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+				ArrayList<ClusterHostStats> clusterStats = (clusterStatsMap.containsKey(clusterName))
+						? (clusterStatsMap.get(clusterName))
+						: (new ArrayList<ClusterHostStats>());
+				clusterStats.add(stat);
+				clusterStatsMap.put(clusterName, clusterStats);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
 	}
 
 	public List<ClusterDetails> getTargetClusterToSaveFile(FileInformation fileInfo) {

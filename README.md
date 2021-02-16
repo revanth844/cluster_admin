@@ -5,7 +5,33 @@ Cluster File Manager application with REST interface
 ## Assumptions:
 
 1. JSON Tree with space statistics of all clusters and their hosts is loaded in primary-memory
-	This is Simulated by a FileAdminService/readClusterStatsToMemory()
+	Following sample data, is loaded by FileAdminService/readClusterStatsToMemory()
+```	
+[
+	{
+		"cluster": "c1",
+		"hostname": "h1",
+		"max_disk_space": "2048",
+		"available_disk_space": "30",
+		"total_no_of_files": 3000
+	},
+	{
+		"cluster": "c1",
+		"hostname": "h2",
+		"max_disk_space": "1024",
+		"available_disk_space": "20",
+		"total_no_of_files": 2000
+	},
+	{
+		"cluster": "c2",
+		"hostname": "h1",
+		"max_disk_space": "512",
+		"available_disk_space": "30",
+		"total_no_of_files": 2000
+	}
+]
+```
+	
 2. Input JSON file has unique Cluster-Host entries
 
 
