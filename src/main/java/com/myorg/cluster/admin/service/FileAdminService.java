@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -22,6 +23,7 @@ import com.myorg.cluster.admin.model.FileInformation;
 @Service
 public class FileAdminService {
 
+	// Sample data
 	private static final String DATA_FILE_NAME = "src/main/resources/input.json";
 
 	// Map<clusterName, List<hostStats>>
@@ -53,6 +55,33 @@ public class FileAdminService {
 				e.printStackTrace();
 			}
 		});
+		
+		//For testing performance of application, uncomment the following block
+		//	Inject random test data
+//		for (int cluster=0; cluster<300; cluster++) {
+//			System.out.println(cluster);
+//			ArrayList<ClusterHostStats> clusterStats = new ArrayList<ClusterHostStats>();
+//			for(int host=0; host<10000; host++) {
+//				clusterStats.add(getClusterStat(cluster, host));
+//			}
+//			clusterStatsMap.put("c"+cluster, clusterStats);
+//		}
+	}
+	
+	private ClusterHostStats getClusterStat(int cluster, int host) {
+		long maxDiskSpace = getRandomNumberUsingInts(512, 2048);
+		
+		return new ClusterHostStats("c"+cluster, "h"+host, 
+				maxDiskSpace,
+				getRandomNumberUsingInts(10, maxDiskSpace/50),
+				getRandomNumberUsingInts(512, 5000)
+				);
+	}
+	private long getRandomNumberUsingInts(long min, long max) {
+	    Random random = new Random();
+	    return random.longs(min, max+1)
+	      .findFirst()
+	      .getAsLong();
 	}
 
 	public List<ClusterDetails> getTargetClusterToSaveFile(FileInformation fileInfo) {
@@ -71,7 +100,10 @@ public class FileAdminService {
 			});
 
 		} else { // get suitable hosts in specified cluster
-			eligibleHosts.addAll(clusterStatsMap.get(fileInfo.getClusterName()).parallelStream().filter(host -> {
+			eligibleHosts.addAll(clusterStatsMap
+					.get(fileInfo.getClusterName())
+					.parallelStream()
+					.filter(host -> {
 				return host.getAvailable_disk_space() > fileSizeInGB;
 			}).map(host -> new ClusterDetails(host.getCluster(), host.getHostname())).collect(Collectors.toList()));
 		}
