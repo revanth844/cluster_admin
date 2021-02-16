@@ -9,7 +9,7 @@ import lombok.ToString;
 @Getter
 @NoArgsConstructor
 @ToString
-public class ClusterStats {
+public class ClusterHostStats {
 
 	String cluster;
 	String hostname;

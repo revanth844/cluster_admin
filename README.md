@@ -6,6 +6,8 @@ Cluster File Manager application with REST interface
 
 1. JSON Tree with space statistics of all clusters and their hosts is loaded in primary-memory
 	This is Simulated by a FileAdminService/readClusterStatsToMemory()
+2. Input JSON file has unique Cluster-Host entries
+
 
 ## Check if JAVA_HOME and MAVEN_HOME are set properly
 ```
